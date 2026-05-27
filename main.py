@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from api.auth import router as auth_router
+from api.tasks import router as tasks_router
 from core.config import settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +30,7 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(tasks_router, prefix=f"{settings.API_V1_STR}/tasks", tags=["tasks"])
 
 
 @app.get("/health")
