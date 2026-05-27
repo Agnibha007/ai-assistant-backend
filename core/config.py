@@ -17,10 +17,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # CORS Configuration
-    BACKEND_CORS_ORIGINS: list[str] = [
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ]
+    BACKEND_CORS_ORIGINS: list[str] = os.getenv(
+        "BACKEND_CORS_ORIGINS", "http://localhost:3000,http://localhost:8000,*"
+    ).split(",")
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
