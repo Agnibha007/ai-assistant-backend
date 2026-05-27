@@ -66,12 +66,14 @@ async def list_tasks(
 async def bridge_websocket(websocket: WebSocket, client_id: str = "default"):
     await websocket.accept()
     connected_bridges[client_id] = websocket
+    print(f"✅ Host Bridge connected: {client_id}") # Log for Render
     try:
         while True:
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         if client_id in connected_bridges:
             del connected_bridges[client_id]
+        print(f"❌ Host Bridge disconnected: {client_id}")
 
 # Internal endpoint for Worker to send commands to Bridge
 @router.post("/bridge/execute")

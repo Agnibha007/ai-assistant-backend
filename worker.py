@@ -20,9 +20,12 @@ celery_app = Celery("worker", broker=settings.REDIS_URL, backend=settings.REDIS_
 def send_to_bridge(action: str, params: dict = None):
     try:
         # Internal API call to the web service to forward via WebSocket
-        # Since API and Worker are in the same process, we can use localhost
-        url = "http://localhost:8000/api/v1/tasks/bridge/execute"
-        resp = requests.post(url, json={"action": action, "params": params or {}}, timeout=2)
+        port = os.getenv("PORT", "10000")
+        url = f"http://localhost:{port}/api/v1/tasks/bridge/execute"
+        logger.info(f"Sending command to bridge via {url}")
+        resp = requests.post(url, json={"action": action, "params": params or {}}, timeout=5)
+        if resp.status_code != 200:
+            logger.error(f"Bridge execution failed: {resp.status_code} - {resp.text}")
         return resp.status_code == 200
     except Exception as e:
         logger.error(f"Failed to reach bridge: {e}")
