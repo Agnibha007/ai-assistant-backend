@@ -1,36 +1,51 @@
 import time
+import logging
 from bson import ObjectId
 from celery import Celery
 from core.config import settings
 from db.session import sync_db
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 celery_app = Celery("worker", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
-
-celery_app.conf.task_routes = {"worker.run_agent_task": "main-queue"}
-
 
 @celery_app.task(name="worker.run_agent_task")
 def run_agent_task(task_id: str, instruction: str) -> bool:
-    # This will be replaced by LangGraph execution
-    # For now, it's a stub
-
-    tasks_collection = sync_db["tasks"]
-    task = tasks_collection.find_one({"_id": ObjectId(task_id)})
+    logger.info(f"Worker received task: {task_id} with instruction: {instruction}")
     
-    if task:
+    try:
+        tasks_collection = sync_db["tasks"]
+        task = tasks_collection.find_one({"_id": ObjectId(task_id)})
+        
+        if not task:
+            logger.error(f"Task {task_id} not found in database")
+            return False
+
+        logger.info(f"Updating task {task_id} status to 'running'")
         tasks_collection.update_one(
             {"_id": ObjectId(task_id)},
             {"$set": {"status": "running"}}
         )
 
-        # Simulate processing
-        time.sleep(2)
+        # Simulate processing (In future, this calls LangGraph)
+        time.sleep(5)
 
+        logger.info(f"Updating task {task_id} status to 'completed'")
         tasks_collection.update_one(
             {"_id": ObjectId(task_id)},
             {"$set": {
                 "status": "completed",
-                "result": f"Successfully simulated execution of: {instruction}"
+                "result": f"Successfully executed: {instruction}"
             }}
         )
-    return True
+        return True
+    except Exception as e:
+        logger.error(f"Error processing task {task_id}: {str(e)}")
+        if 'tasks_collection' in locals():
+            tasks_collection.update_one(
+                {"_id": ObjectId(task_id)},
+                {"$set": {"status": "failed", "result": str(e)}}
+            )
+        return False
