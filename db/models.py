@@ -1,29 +1,21 @@
 from datetime import datetime
+from typing import Any, Optional
+from pydantic import BaseModel, Field
 
-from sqlalchemy import Boolean, DateTime, Integer, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+class MongoBaseModel(BaseModel):
+    id: Optional[str] = Field(None, alias="_id")
 
+    class Config:
+        populate_by_name = True
 
-class Base(DeclarativeBase):
-    pass
+class User(MongoBaseModel):
+    email: str
+    hashed_password: str
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-
-class User(Base):
-    __tablename__ = "users"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-
-class Task(Base):
-    __tablename__ = "tasks"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    description: Mapped[str] = mapped_column(String, nullable=False)
-    # status: pending, running, completed, failed
-    status: Mapped[str] = mapped_column(String, default="pending")
-    result: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+class Task(MongoBaseModel):
+    description: str
+    status: str = "pending"
+    result: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)

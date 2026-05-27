@@ -4,25 +4,15 @@ from typing import Any
 
 from api.auth import router as auth_router
 from core.config import settings
-from db.models import Base
-from db.session import engine
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 
-# Create tables for now, in production use Alembic
-def init_db() -> None:
-    Base.metadata.create_all(bind=engine)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # In a real app, you might want to handle this differently
-    try:
-        init_db()
-    except Exception as e:
-        print(f"Error initializing database: {e}")
+    # In MongoDB, we don't need to 'create tables'
+    # but we could initialize indexes here
     yield
 
 
@@ -43,4 +33,4 @@ app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["aut
 
 @app.get("/health")
 def health_check() -> Any:
-    return {"status": "ok", "service": "core-api"}
+    return {"status": "ok", "service": "core-api", "database": "mongodb"}

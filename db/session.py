@@ -1,16 +1,15 @@
 from collections.abc import Generator
-
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 from core.config import settings
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
 
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Async client for FastAPI
+async_client = AsyncIOMotorClient(settings.MONGODB_URL)
+async_db = async_client[settings.MONGODB_DB_NAME]
 
+# Sync client for Celery
+sync_client = MongoClient(settings.MONGODB_URL)
+sync_db = sync_client[settings.MONGODB_DB_NAME]
 
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_db():
+    return async_db

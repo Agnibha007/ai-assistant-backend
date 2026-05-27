@@ -2,9 +2,8 @@ fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
-sqlalchemy
-alembic
-psycopg2-binary
+pymongo
+motor
 celery
 redis
 python-jose[cryptography]
@@ -23,3 +22,4 @@ mypy
 types-python-jose
 types-passlib
 types-redis
+dnspython
