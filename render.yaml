@@ -41,6 +41,9 @@ services:
   - type: redis
     name: ai-assistant-redis
     plan: free
+    ipAllowList:
+      - cidrBlock: 0.0.0.0/0
+        description: allow-all
 
 # 4. Managed PostgreSQL
 databases:
