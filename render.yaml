@@ -37,12 +37,12 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
 
-# 3. Managed PostgreSQL
-databases:
-  - name: ai-assistant-db
+  # 3. Managed Redis
+  - type: redis
+    name: ai-assistant-redis
     plan: free
 
-# 4. Managed Redis
-redis:
-  - name: ai-assistant-redis
+# 4. Managed PostgreSQL
+databases:
+  - name: ai-assistant-db
     plan: free
